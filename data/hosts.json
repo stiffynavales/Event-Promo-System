@@ -1,0 +1,28 @@
+[
+  {
+    "id": "f9f628e6-aad1-48a2-9035-5c06ba4e4244",
+    "hostName": "Test Host 7",
+    "hostEmail": "stiffy.navales1994@gmail.com",
+    "hostBio": "fdsfsdfsdfsdfsd fsdfsdfsdf dfsdfs ",
+    "city": "Manila",
+    "venue": "Test Venue",
+    "eventDate": "2026-03-21",
+    "eventTime": "09:21",
+    "slug": "manila-test-host-7",
+    "status": "complete",
+    "createdAt": "2026-03-11T23:21:58.033Z",
+    "generatedCopy": {
+      "pageHeadline": "Join the Manila Watch Party — Live Event with Test Host 7",
+      "eventDescription": "Get ready for an unforgettable evening! Join Test Host 7 and a community of like-minded people for a live watch party in Manila. We'll be gathering at Test Venue on Saturday, March 21, 2026 at 09:21 for a shared viewing experience you won't want to miss.",
+      "confirmationEmail": "Hi there,\n\nYou're in! 🎉 We're so excited to have you join us for the Manila Watch Party.\n\nHere are your event details:\n📅 Date: Saturday, March 21, 2026\n🕐 Time: 09:21\n📍 Venue: Test Venue, Manila\n🎤 Hosted by: Test Host 7\n\nPlease arrive a few minutes early so we can get settled before the event starts. Bring your enthusiasm, a great attitude, and be ready to connect with amazing people in the Manila community!\n\nIf you have any questions, simply reply to this email.\n\nSee you soon!\nTest Host 7",
+      "reminder1DayBefore": "Hey there!\n\nJust a quick reminder — the Manila Watch Party is TOMORROW! 🚀\n\n📅 Saturday, March 21, 2026\n🕐 09:21\n📍 Test Venue, Manila\n\nWe have an incredible evening planned and can't wait to see you there. Make sure to mark your calendar, set a reminder, and get ready for an amazing experience.\n\nDon't forget to share this event with a friend who might want to join! See you tomorrow.\n\nTest Host 7",
+      "reminder1HourBefore": "We're starting in 1 HOUR! ⏰🔥\n\nHead over to Test Venue in Manila now — doors open soon and you don't want to miss the beginning!\n\nSee you there!\nTest Host 7",
+      "followUpEmail": "Hi,\n\nWhat an amazing evening! 🙌 Thank you so much for joining us at the Manila Watch Party. It was incredible to share the experience with such an engaged and enthusiastic group.\n\nWe hope you enjoyed every moment of it. The energy in the room at Test Venue was truly special, and that's because of people like YOU who showed up and made it happen.\n\nStay connected — we have more exciting events coming up and we'd love to have you back. Keep an eye on your inbox for upcoming announcements.\n\nUntil next time,\nTest Host 7",
+      "socialPost1": "🎬✨ Watch Party Alert — Manila!\n\nWe're hosting a live community viewing event and YOU'RE invited!\n\n📅 Saturday, March 21, 2026\n🕐 09:21\n📍 Test Venue, Manila\n🎤 Hosted by Test Host 7\n\nThis is going to be an incredible experience. Don't miss out — grab your free spot now! 👇\n\n💥 Register at the link in bio!\n\n#WatchParty #ManilaEvents #CommunityEvent #LiveEvent",
+      "socialPost2": "🎬 Manila Watch Party — Saturday, March 21, 2026 at 09:21! Join Test Host 7 at Test Venue for an awesome live community event. Free to attend — register now! #WatchParty #Manila #LiveEvent",
+      "socialPost3": "Excited to announce the Manila Watch Party! 🎬\n\nI'll be hosting a community live-viewing event on Saturday, March 21, 2026 at 09:21 at Test Venue in Manila.\n\nThis is a wonderful opportunity to connect with your local community, share an incredible experience together, and be part of something meaningful.\n\nAll are welcome — spaces are limited, so be sure to register early.\n\nLooking forward to seeing you there!\n\n#CommunityEvent #Manila #WatchParty #Networking"
+    },
+    "driveFolderUrl": "DRIVE_ERROR",
+    "registrationPageUrl": "http://localhost:3000/event/manila-test-host-7"
+  }
+]
