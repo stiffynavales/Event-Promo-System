@@ -5,12 +5,15 @@ import { Host, Attendee } from "./types";
 
 // ─── LOCAL STORAGE (dev fallback) ──────────────────────────────────────────
 const DATA_DIR = path.join(process.cwd(), "data");
+const IS_VERCEL = !!process.env.VERCEL;
 
 function ensureDataDir() {
+  if (IS_VERCEL) return; // Prevent Vercel from trying to create directories
   if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 }
 
 function readLocalJson<T>(file: string, fallback: T): T {
+  if (IS_VERCEL) return fallback; // Prevent Vercel from trying to read strictly local files
   ensureDataDir();
   const p = path.join(DATA_DIR, file);
   if (!fs.existsSync(p)) return fallback;
@@ -22,6 +25,7 @@ function readLocalJson<T>(file: string, fallback: T): T {
 }
 
 function writeLocalJson<T>(file: string, data: T): void {
+  if (IS_VERCEL) return; // Prevent Vercel from trying to write strictly local files
   ensureDataDir();
   fs.writeFileSync(path.join(DATA_DIR, file), JSON.stringify(data, null, 2));
 }
