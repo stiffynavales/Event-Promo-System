@@ -33,9 +33,18 @@ function writeLocalJson<T>(file: string, data: T): void {
 // ─── VERCEL KV INTEGRATION ──────────────────────────────────────────────────
 const USE_KV = !!process.env.KV_REST_API_URL;
 
+function assertKvAvailable() {
+  if (IS_VERCEL && !USE_KV) {
+    throw new Error(
+      "Vercel KV is not configured! You created the database, but you MUST click 'Redeploy' on your Vercel dashboard so the app receives the new KV environment variables."
+    );
+  }
+}
+
 // ─── PUBLIC API ─────────────────────────────────────────────────────────────
 
 export async function getHosts(): Promise<Host[]> {
+  assertKvAvailable();
   if (USE_KV) {
     const data = await kv.get<Host[]>("hosts");
     return data || [];
