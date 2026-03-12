@@ -1,5 +1,5 @@
 import sgMail from "@sendgrid/mail";
-import { Host } from "./types";
+import { Host, Attendee } from "./types";
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY || "");
 
@@ -80,5 +80,29 @@ export async function sendHostPromoKit(
     from: process.env.SENDGRID_FROM_EMAIL || "noreply@example.com",
     subject: `🎉 Your Watch Party Promo Kit is Ready — ${host.city}!`,
     html,
+  });
+}
+
+export async function sendAttendeeConfirmation(
+  attendee: Attendee,
+  host: Host
+): Promise<void> {
+  if (!host.generatedCopy?.confirmationEmail) {
+    console.warn(`[Email] No AI confirmation email found for host ${host.slug}`);
+    return;
+  }
+
+  // Use the AI-generated email text as the body
+  let textBody = host.generatedCopy.confirmationEmail;
+  
+  // Replace template variables if the AI left any
+  textBody = textBody.replace(/\[Attendee Name\]|\[Name\]/gi, attendee.name);
+  textBody = textBody.replace(/\[Host Name\]/gi, host.hostName);
+
+  await sgMail.send({
+    to: attendee.email,
+    from: process.env.SENDGRID_FROM_EMAIL || "noreply@example.com",
+    subject: `You're registered for the ${host.city} Watch Party!`,
+    text: textBody,
   });
 }

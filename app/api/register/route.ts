@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { v4 as uuidv4 } from "uuid";
 import { saveAttendee, getHostBySlug } from "@/lib/db";
+import { sendAttendeeConfirmation } from "@/lib/email";
 import { Attendee } from "@/lib/types";
 
 export async function POST(req: NextRequest) {
@@ -28,6 +29,21 @@ export async function POST(req: NextRequest) {
     };
 
     await saveAttendee(attendee);
+
+    // Try sending confirmation email
+    const sendgridConfigured =
+      process.env.SENDGRID_API_KEY &&
+      process.env.SENDGRID_API_KEY !== "your_sendgrid_api_key_here";
+
+    if (sendgridConfigured) {
+      try {
+        await sendAttendeeConfirmation(attendee, host);
+        console.log(`[POST /api/register] ✅ Confirmation email sent to ${attendee.email}`);
+      } catch (emailErr) {
+        console.error("[POST /api/register] Failed to send email:", emailErr);
+        // Non-fatal, still return success for registration
+      }
+    }
 
     return NextResponse.json({ success: true, attendee }, { status: 201 });
   } catch (err) {
