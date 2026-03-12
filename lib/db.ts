@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { kv } from "@vercel/kv";
+import { Redis } from "@upstash/redis";
 import { Host, Attendee } from "./types";
 
 // ─── LOCAL STORAGE (dev fallback) ──────────────────────────────────────────
@@ -8,12 +8,12 @@ const DATA_DIR = path.join(process.cwd(), "data");
 const IS_VERCEL = !!process.env.VERCEL;
 
 function ensureDataDir() {
-  if (IS_VERCEL) return; // Prevent Vercel from trying to create directories
+  if (IS_VERCEL) return;
   if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 }
 
 function readLocalJson<T>(file: string, fallback: T): T {
-  if (IS_VERCEL) return fallback; // Prevent Vercel from trying to read strictly local files
+  if (IS_VERCEL) return fallback;
   ensureDataDir();
   const p = path.join(DATA_DIR, file);
   if (!fs.existsSync(p)) return fallback;
@@ -25,18 +25,26 @@ function readLocalJson<T>(file: string, fallback: T): T {
 }
 
 function writeLocalJson<T>(file: string, data: T): void {
-  if (IS_VERCEL) return; // Prevent Vercel from trying to write strictly local files
+  if (IS_VERCEL) return;
   ensureDataDir();
   fs.writeFileSync(path.join(DATA_DIR, file), JSON.stringify(data, null, 2));
 }
 
-// ─── VERCEL KV INTEGRATION ──────────────────────────────────────────────────
-const USE_KV = !!process.env.KV_REST_API_URL;
+// ─── UPSTASH REDIS INTEGRATION ──────────────────────────────────────────────
+const USE_REDIS = !!process.env.KV_REST_API_URL || !!process.env.UPSTASH_REDIS_REST_URL;
 
-function assertKvAvailable() {
-  if (IS_VERCEL && !USE_KV) {
+// On Vercel Marketplace, the variables are often either KV_REST_API_URL or UPSTASH_REDIS_REST_URL
+const redis = USE_REDIS
+  ? new Redis({
+      url: process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL || "",
+      token: process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN || "",
+    })
+  : null;
+
+function assertRedisAvailable() {
+  if (IS_VERCEL && !USE_REDIS) {
     throw new Error(
-      "Vercel KV is not configured! You created the database, but you MUST click 'Redeploy' on your Vercel dashboard so the app receives the new KV environment variables."
+      "Upstash Redis is not configured! You must click 'Redeploy' on your Vercel dashboard so the app receives the new Upstash environment variables."
     );
   }
 }
@@ -44,9 +52,9 @@ function assertKvAvailable() {
 // ─── PUBLIC API ─────────────────────────────────────────────────────────────
 
 export async function getHosts(): Promise<Host[]> {
-  assertKvAvailable();
-  if (USE_KV) {
-    const data = await kv.get<Host[]>("hosts");
+  assertRedisAvailable();
+  if (redis) {
+    const data = await redis.get<Host[]>("hosts");
     return data || [];
   }
   return readLocalJson<Host[]>("hosts.json", []);
@@ -71,8 +79,8 @@ export async function saveHost(host: Host): Promise<void> {
     hosts.push(host);
   }
   
-  if (USE_KV) {
-    await kv.set("hosts", hosts);
+  if (redis) {
+    await redis.set("hosts", hosts);
   } else {
     writeLocalJson("hosts.json", hosts);
   }
@@ -80,8 +88,8 @@ export async function saveHost(host: Host): Promise<void> {
 
 export async function deleteHost(id: string): Promise<void> {
   const hosts = (await getHosts()).filter((h) => h.id !== id);
-  if (USE_KV) {
-    await kv.set("hosts", hosts);
+  if (redis) {
+    await redis.set("hosts", hosts);
   } else {
     writeLocalJson("hosts.json", hosts);
   }
@@ -89,8 +97,8 @@ export async function deleteHost(id: string): Promise<void> {
 
 export async function getAttendees(hostSlug?: string): Promise<Attendee[]> {
   let all: Attendee[];
-  if (USE_KV) {
-    all = (await kv.get<Attendee[]>("attendees")) || [];
+  if (redis) {
+    all = (await redis.get<Attendee[]>("attendees")) || [];
   } else {
     all = readLocalJson<Attendee[]>("attendees.json", []);
   }
@@ -101,8 +109,8 @@ export async function saveAttendee(attendee: Attendee): Promise<void> {
   const attendees = await getAttendees();
   attendees.push(attendee);
   
-  if (USE_KV) {
-    await kv.set("attendees", attendees);
+  if (redis) {
+    await redis.set("attendees", attendees);
   } else {
     writeLocalJson("attendees.json", attendees);
   }
