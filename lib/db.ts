@@ -11,10 +11,13 @@ const DATA_DIR = IS_VERCEL
 
 // ─── GOOGLE DRIVE STORAGE (Vercel production) ──────────────────────────────
 function getDriveClient() {
+  let pk = process.env.GOOGLE_PRIVATE_KEY || "";
+  pk = pk.replace(/\\n/g, "\n").replace(/^"|"$/g, ""); // Fix common Vercel parsing issues
+
   const auth = new google.auth.GoogleAuth({
     credentials: {
       client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-      private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
+      private_key: pk,
     },
     scopes: ["https://www.googleapis.com/auth/drive"],
   });

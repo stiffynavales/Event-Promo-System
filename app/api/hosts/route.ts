@@ -29,9 +29,10 @@ export async function POST(req: NextRequest) {
 
     await saveHost(host);
     return NextResponse.json({ success: true, host });
-  } catch (err) {
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
     console.error("[POST /api/hosts]", err);
-    return NextResponse.json({ error: "Failed to create host" }, { status: 500 });
+    return NextResponse.json({ error: `Failed to create host: ${msg}` }, { status: 500 });
   }
 }
 
