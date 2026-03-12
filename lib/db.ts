@@ -1,17 +1,10 @@
 import fs from "fs";
 import path from "path";
+import { kv } from "@vercel/kv";
 import { Host, Attendee } from "./types";
 
-// ─── LOCAL / VERCEL TEMPORARY FILE STORAGE ─────────────────────────────────
-const IS_VERCEL = !!process.env.VERCEL;
-const DATA_DIR = IS_VERCEL
-  ? "/tmp/event-promo-data"
-  : path.join(process.cwd(), "data");
-
-// In-memory cache to help Vercel serverless functions persist data slightly longer
-// across warm invocations without relying solely on the /tmp directory
-let memoryHosts: Host[] | null = null;
-let memoryAttendees: Attendee[] | null = null;
+// ─── LOCAL STORAGE (dev fallback) ──────────────────────────────────────────
+const DATA_DIR = path.join(process.cwd(), "data");
 
 function ensureDataDir() {
   if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -33,16 +26,17 @@ function writeLocalJson<T>(file: string, data: T): void {
   fs.writeFileSync(path.join(DATA_DIR, file), JSON.stringify(data, null, 2));
 }
 
-// ─── PUBLIC API (async to match existing API routes) ───────────────────────
+// ─── VERCEL KV INTEGRATION ──────────────────────────────────────────────────
+const USE_KV = !!process.env.KV_REST_API_URL;
+
+// ─── PUBLIC API ─────────────────────────────────────────────────────────────
 
 export async function getHosts(): Promise<Host[]> {
-  // Use memory cache first if available (crucial for Vercel)
-  if (memoryHosts) return [...memoryHosts];
-  
-  // Fallback to file system
-  const diskHosts = readLocalJson<Host[]>("hosts.json", []);
-  memoryHosts = diskHosts;
-  return [...memoryHosts];
+  if (USE_KV) {
+    const data = await kv.get<Host[]>("hosts");
+    return data || [];
+  }
+  return readLocalJson<Host[]>("hosts.json", []);
 }
 
 export async function getHostBySlug(slug: string): Promise<Host | undefined> {
@@ -64,27 +58,28 @@ export async function saveHost(host: Host): Promise<void> {
     hosts.push(host);
   }
   
-  memoryHosts = hosts;
-  try {
+  if (USE_KV) {
+    await kv.set("hosts", hosts);
+  } else {
     writeLocalJson("hosts.json", hosts);
-  } catch (err) {
-    console.warn("Failed to write to local storage, relying on memory:", err);
   }
 }
 
 export async function deleteHost(id: string): Promise<void> {
   const hosts = (await getHosts()).filter((h) => h.id !== id);
-  memoryHosts = hosts;
-  writeLocalJson("hosts.json", hosts);
+  if (USE_KV) {
+    await kv.set("hosts", hosts);
+  } else {
+    writeLocalJson("hosts.json", hosts);
+  }
 }
 
 export async function getAttendees(hostSlug?: string): Promise<Attendee[]> {
   let all: Attendee[];
-  if (memoryAttendees) {
-    all = [...memoryAttendees];
+  if (USE_KV) {
+    all = (await kv.get<Attendee[]>("attendees")) || [];
   } else {
     all = readLocalJson<Attendee[]>("attendees.json", []);
-    memoryAttendees = all;
   }
   return hostSlug ? all.filter((a) => a.hostSlug === hostSlug) : all;
 }
@@ -93,11 +88,10 @@ export async function saveAttendee(attendee: Attendee): Promise<void> {
   const attendees = await getAttendees();
   attendees.push(attendee);
   
-  memoryAttendees = attendees;
-  try {
+  if (USE_KV) {
+    await kv.set("attendees", attendees);
+  } else {
     writeLocalJson("attendees.json", attendees);
-  } catch (err) {
-    console.warn("Failed to write to local storage, relying on memory:", err);
   }
 }
 
