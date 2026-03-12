@@ -2,7 +2,13 @@ import fs from "fs";
 import path from "path";
 import { Host, Attendee } from "./types";
 
-const DATA_DIR = path.join(process.cwd(), "data");
+// On Vercel, the filesystem is read-only except for /tmp
+// Detect Vercel environment and use /tmp instead of ./data
+const IS_VERCEL = process.env.VERCEL === "1";
+const DATA_DIR = IS_VERCEL
+  ? "/tmp/event-promo-data"
+  : path.join(process.cwd(), "data");
+
 const HOSTS_FILE = path.join(DATA_DIR, "hosts.json");
 const ATTENDEES_FILE = path.join(DATA_DIR, "attendees.json");
 
@@ -16,7 +22,11 @@ export function getHosts(): Host[] {
   ensureDataDir();
   if (!fs.existsSync(HOSTS_FILE)) return [];
   const raw = fs.readFileSync(HOSTS_FILE, "utf-8");
-  return JSON.parse(raw) as Host[];
+  try {
+    return JSON.parse(raw) as Host[];
+  } catch {
+    return [];
+  }
 }
 
 export function getHostBySlug(slug: string): Host | undefined {
@@ -43,8 +53,12 @@ export function getAttendees(hostSlug?: string): Attendee[] {
   ensureDataDir();
   if (!fs.existsSync(ATTENDEES_FILE)) return [];
   const raw = fs.readFileSync(ATTENDEES_FILE, "utf-8");
-  const all = JSON.parse(raw) as Attendee[];
-  return hostSlug ? all.filter((a) => a.hostSlug === hostSlug) : all;
+  try {
+    const all = JSON.parse(raw) as Attendee[];
+    return hostSlug ? all.filter((a) => a.hostSlug === hostSlug) : all;
+  } catch {
+    return [];
+  }
 }
 
 export function saveAttendee(attendee: Attendee): void {

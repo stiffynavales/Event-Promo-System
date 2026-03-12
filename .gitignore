@@ -42,3 +42,8 @@ next-env.d.ts
 
 .vercel
 .env*.local
+
+# local data files (not for production)
+/data
+test-gemini.mjs
+gemini-test-output.txt
