@@ -15,9 +15,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "hostId is required" }, { status: 400 });
     }
 
-    const host = await getHostById(hostId);
+    let host = await getHostById(hostId);
+    
+    // Vercel KV can have a 50-200ms replication delay on Edge networks. Retry up to 3 times.
+    let retries = 3;
+    while (!host && retries > 0) {
+      await new Promise(res => setTimeout(res, 300));
+      host = await getHostById(hostId);
+      retries--;
+    }
+
     if (!host) {
-      return NextResponse.json({ error: "Host not found" }, { status: 404 });
+      return NextResponse.json({ error: "Host not found in database (KV sync delay)" }, { status: 404 });
     }
 
     // Mark as generating
