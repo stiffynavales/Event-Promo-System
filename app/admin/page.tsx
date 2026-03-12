@@ -239,7 +239,7 @@ export default function AdminPage() {
                       >
                         🌐 View Event Page
                       </a>
-                      {host.driveFolderUrl && host.driveFolderUrl !== "DRIVE_NOT_CONFIGURED" && (
+                      {host.driveFolderUrl && host.driveFolderUrl !== "DRIVE_NOT_CONFIGURED" && host.driveFolderUrl !== "DRIVE_ERROR" && (
                         <a
                           href={host.driveFolderUrl}
                           target="_blank"
