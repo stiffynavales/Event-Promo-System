@@ -33,59 +33,52 @@ export async function createHostDriveFolder(
 
   const folderId = folderRes.data.id!;
 
-  // Create email templates doc
-  const emailContent = buildEmailDoc(host, copy);
-  await drive.files.create({
-    requestBody: {
-      name: "Email Templates",
-      mimeType: "application/vnd.google-apps.document",
-      parents: [folderId],
-    },
-    media: {
-      mimeType: "text/plain",
-      body: emailContent,
-    },
-    fields: "id",
-  });
+  try {
+    // Create email templates doc
+    const emailContent = buildEmailDoc(host, copy);
+    await drive.files.create({
+      requestBody: {
+        name: "Email Templates",
+        mimeType: "application/vnd.google-apps.document",
+        parents: [folderId],
+      },
+      media: { mimeType: "text/plain", body: emailContent },
+      fields: "id",
+    });
 
-  // Create social media templates doc
-  const socialContent = buildSocialDoc(host, copy);
-  await drive.files.create({
-    requestBody: {
-      name: "Social Media Templates",
-      mimeType: "application/vnd.google-apps.document",
-      parents: [folderId],
-    },
-    media: {
-      mimeType: "text/plain",
-      body: socialContent,
-    },
-    fields: "id",
-  });
+    // Create social media templates doc
+    const socialContent = buildSocialDoc(host, copy);
+    await drive.files.create({
+      requestBody: {
+        name: "Social Media Templates",
+        mimeType: "application/vnd.google-apps.document",
+        parents: [folderId],
+      },
+      media: { mimeType: "text/plain", body: socialContent },
+      fields: "id",
+    });
 
-  // Create event info doc
-  const infoContent = buildInfoDoc(host, copy);
-  await drive.files.create({
-    requestBody: {
-      name: "Event Info & Registration Link",
-      mimeType: "application/vnd.google-apps.document",
-      parents: [folderId],
-    },
-    media: {
-      mimeType: "text/plain",
-      body: infoContent,
-    },
-    fields: "id",
-  });
+    // Create event info doc
+    const infoContent = buildInfoDoc(host, copy);
+    await drive.files.create({
+      requestBody: {
+        name: "Event Info & Registration Link",
+        mimeType: "application/vnd.google-apps.document",
+        parents: [folderId],
+      },
+      media: { mimeType: "text/plain", body: infoContent },
+      fields: "id",
+    });
 
-  // Make folder shareable (anyone with link can view)
-  await drive.permissions.create({
-    fileId: folderId,
-    requestBody: {
-      role: "reader",
-      type: "anyone",
-    },
-  });
+    // Make folder shareable (anyone with link can view)
+    await drive.permissions.create({
+      fileId: folderId,
+      requestBody: { role: "reader", type: "anyone" },
+    });
+  } catch (err: unknown) {
+    console.error("[Drive] Partially failed creating docs/permissions inside folder:", err);
+    // Continue anyway — the folder exists!
+  }
 
   return `https://drive.google.com/drive/folders/${folderId}`;
 }
