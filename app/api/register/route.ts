@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const host = getHostBySlug(hostSlug);
+    const host = await getHostBySlug(hostSlug);
     if (!host) {
       return NextResponse.json({ error: "Event not found" }, { status: 404 });
     }
@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
       registeredAt: new Date().toISOString(),
     };
 
-    saveAttendee(attendee);
+    await saveAttendee(attendee);
 
     return NextResponse.json({ success: true, attendee }, { status: 201 });
   } catch (err) {

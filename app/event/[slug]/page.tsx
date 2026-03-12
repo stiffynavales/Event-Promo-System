@@ -8,7 +8,7 @@ interface Props {
 
 export default async function EventPage({ params }: Props) {
   const { slug } = await params;
-  const host = getHostBySlug(slug);
+  const host = await getHostBySlug(slug);
   if (!host) notFound();
 
   const headline = host.generatedCopy?.pageHeadline || `Join the ${host.city} Watch Party`;

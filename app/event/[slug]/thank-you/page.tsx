@@ -8,7 +8,7 @@ interface Props {
 
 export default async function ThankYouPage({ params }: Props) {
   const { slug } = await params;
-  const host = getHostBySlug(slug);
+  const host = await getHostBySlug(slug);
   if (!host) notFound();
 
   const dateObj = new Date(host.eventDate + "T00:00:00");

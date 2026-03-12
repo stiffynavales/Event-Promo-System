@@ -15,14 +15,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "hostId is required" }, { status: 400 });
     }
 
-    const host = getHostById(hostId);
+    const host = await getHostById(hostId);
     if (!host) {
       return NextResponse.json({ error: "Host not found" }, { status: 404 });
     }
 
     // Mark as generating
     host.status = "generating";
-    saveHost(host);
+    await saveHost(host);
 
     // Step 1: Generate AI copy
     console.log(`[Pipeline] Step 1: Generating AI copy for ${host.hostName}...`);
@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
       const msg = err instanceof Error ? err.message : String(err);
       console.error(`[Pipeline] Step 1 FAILED (OpenAI):`, msg);
       host.status = "error";
-      saveHost(host);
+      await saveHost(host);
       return NextResponse.json({ error: `OpenAI failed: ${msg}` }, { status: 500 });
     }
 
@@ -89,7 +89,7 @@ export async function POST(req: NextRequest) {
 
     // Mark as complete
     host.status = "complete";
-    saveHost(host);
+    await saveHost(host);
     console.log(`[Pipeline] ✓ Complete for ${host.hostName}`);
 
     return NextResponse.json({ success: true, host });
@@ -98,8 +98,8 @@ export async function POST(req: NextRequest) {
     console.error("[Pipeline] Unexpected error:", msg);
     if (hostId) {
       try {
-        const host = getHostById(hostId);
-        if (host) { host.status = "error"; saveHost(host); }
+        const host = await getHostById(hostId);
+        if (host) { host.status = "error"; await saveHost(host); }
       } catch {}
     }
     return NextResponse.json({ error: `Pipeline failed: ${msg}` }, { status: 500 });
